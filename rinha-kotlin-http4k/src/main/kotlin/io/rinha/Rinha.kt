@@ -107,9 +107,10 @@ fun main() {
         }
     }.then(app)
 
+    val port = System.getenv("SERVER_PORT")?.toInt() ?: 8080
     val server = PrintRequest()
         .then(appFilter)
-        .asServer(SunHttp(8080))
+        .asServer(SunHttp(port))
         .start()
 
     println("Server started on " + server.port())

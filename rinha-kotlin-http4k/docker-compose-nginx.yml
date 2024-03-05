@@ -4,9 +4,8 @@ services:
   api1: &api
     build:
       context: .
-      dockerfile: Dockerfile-native
+      dockerfile: Dockerfile
     hostname: api1
-    platform: linux/amd64
     depends_on:
       db:
         condition: service_healthy

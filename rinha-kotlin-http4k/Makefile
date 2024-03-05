@@ -8,3 +8,14 @@ perf:
 	./load-test/executar-test-local.sh
 
 build: build-app unzip build-docker-compose
+
+build-app-native:
+	./gradlew clean shadowJar
+
+build-docker-native:
+	docker build --platform=linux/amd64 -t rinha-http4k-native -f Dockerfile-native .
+
+run-native:
+	docker run --platform=linux/amd64 -p 8080:8080 rinha-http4k-native
+
+build-native: build-app-native build-docker-native
