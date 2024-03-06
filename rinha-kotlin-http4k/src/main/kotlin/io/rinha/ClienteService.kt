@@ -3,6 +3,9 @@ package io.rinha
 import com.zaxxer.hikari.HikariDataSource
 import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.UNPROCESSABLE_ENTITY
+import org.json.JSONArray
+import org.json.JSONObject
+import java.time.LocalDateTime
 
 class ClienteService(
     private val datasource: HikariDataSource
@@ -85,28 +88,27 @@ class ClienteService(
         return cliente
     }
 
-    fun findLast10Transactions(clienteId: Int): List<Transacao> {
-        val transactions = ArrayList<Transacao>()
+    fun findLast10Transactions(clienteId: Int): JSONArray {
+        val ultimasTransacoesResponse = JSONArray()
 
         getConnection().use { connection ->
             connection.prepareStatement("SELECT * FROM transacao WHERE cliente_id = ? ORDER BY realizada_em DESC LIMIT 10").use { statement ->
                 statement.setInt(1, clienteId)
                 statement.executeQuery().use { rs ->
                     while (rs.next()) {
-                        transactions.add(
-                            Transacao(
-                                rs.getInt("valor"),
-                                TipoTransacao.from(rs.getString("tipo")),
-                                rs.getString("descricao"),
-                                rs.getTimestamp("realizada_em").toLocalDateTime()
-                            )
+                        ultimasTransacoesResponse.put(
+                            JSONObject()
+                            .put("valor", rs.getInt("valor"))
+                            .put("tipo", rs.getString("tipo"))
+                            .put("descricao", rs.getString("descricao"))
+                            .put("realizada_em",  rs.getTimestamp("realizada_em").toLocalDateTime())
                         )
                     }
                 }
             }
         }
 
-        return transactions
+        return ultimasTransacoesResponse
     }
 
 

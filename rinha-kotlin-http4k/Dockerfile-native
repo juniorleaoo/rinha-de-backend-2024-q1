@@ -3,7 +3,12 @@ FROM ghcr.io/graalvm/native-image-community:21 as graalvm
 COPY . /home/app/http4k
 WORKDIR /home/app/http4k
 
-RUN native-image --static --no-fallback -cp build/libs/rinha-0.0.1.jar io.rinha.RinhaKt
+RUN native-image --static  \
+    -H:ReflectionConfigurationFiles=src/main/resources/META-INF/reflect-config.json  \
+    -H:JNIConfigurationFiles=src/main/resources/META-INF/jni-config.json  \
+    -H:DynamicProxyConfigurationFiles=src/main/resources/META-INF/proxy-config.json  \
+    --no-fallback  \
+    -cp build/libs/rinha-0.0.1.jar io.rinha.RinhaKt
 
 FROM frolvlad/alpine-glibc
 EXPOSE 8080

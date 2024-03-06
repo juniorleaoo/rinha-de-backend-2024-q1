@@ -18,10 +18,10 @@ repositories {
 
 dependencies {
     implementation("org.http4k:http4k-core:${http4kVersion}")
-    implementation("org.http4k:http4k-format-jackson:${http4kVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}")
-    implementation("org.postgresql:postgresql:42.5.1")
-    implementation("com.zaxxer:HikariCP:5.1.0")
+    implementation("org.json:json:20240303")
+    implementation("org.postgresql:postgresql:42.3.4")
+    implementation("com.zaxxer:HikariCP:5.0.1")
 }
 
 kotlin {

@@ -1,7 +1,5 @@
 package io.rinha
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import org.http4k.core.Filter
 import org.http4k.core.HttpHandler
 import org.http4k.core.Method
@@ -11,16 +9,14 @@ import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNPROCESSABLE_ENTITY
 import org.http4k.core.then
-import org.http4k.core.with
-import org.http4k.filter.DebuggingFilters
-import org.http4k.filter.DebuggingFilters.PrintRequest
-import org.http4k.format.Jackson
+import org.http4k.filter.DebuggingFilters.PrintRequestAndResponse
 import org.http4k.lens.Path
 import org.http4k.lens.nonEmptyString
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.server.SunHttpLoom
 import org.http4k.server.asServer
+import org.json.JSONObject
 import java.time.LocalDateTime
 
 private val getIdLens = Path.nonEmptyString().map(String::toInt).of("id")
@@ -37,7 +33,12 @@ fun postTransacoes(clienteService: ClienteService): HttpHandler = {
         throw HttpException(NOT_FOUND)
     }
 
-    val transacaoRequest = transacaoRequestLens.extract(it)
+    val json = JSONObject(it.bodyString())
+    val transacaoRequest = TransacaoRequest(
+        valor = Integer.parseInt((json.get("valor") as Number).toString()),
+        descricao = json.getString("descricao"),
+        tipo = TipoTransacao.from(json.getString("tipo")),
+    )
 
     if (isInvalid(transacaoRequest)) {
         throw HttpException(UNPROCESSABLE_ENTITY)
@@ -53,11 +54,13 @@ fun postTransacoes(clienteService: ClienteService): HttpHandler = {
         )
     )
 
-    Response(OK).with(
-        transacaoResponseLens of TransacaoResponse(
-            limite = clienteAtualizado.limite,
-            saldo = clienteAtualizado.saldo
-        )
+    Response(OK).body(
+        JSONObject(
+            TransacaoResponse(
+                limite = clienteAtualizado.limite,
+                saldo = clienteAtualizado.saldo
+            )
+        ).toString()
     )
 }
 
@@ -70,22 +73,20 @@ fun getExtrato(clienteService: ClienteService): HttpHandler = {
     val cliente = clienteService.findById(clienteId) ?: throw HttpException(NOT_FOUND)
     val transacoes = clienteService.findLast10Transactions(clienteId)
 
-    val extratoResponse = ExtratoResponse(
-        saldo = SaldoResponse(
-            total = cliente.saldo,
-            LocalDateTime.now(),
-            limite = cliente.limite
-        ),
-        ultimasTransacoes = transacoes
+    Response(OK).body(
+        JSONObject()
+            .put(
+                "saldo", JSONObject()
+                    .put("total", cliente.saldo)
+                    .put("data_extrato", LocalDateTime.now())
+                    .put("limite", cliente.limite)
+            )
+            .put("ultimas_transacoes", transacoes)
+            .toString()
     )
-
-    Response(OK).with(extratoResponseLens of extratoResponse)
 }
 
 fun main() {
-    Jackson.mapper.propertyNamingStrategy = PropertyNamingStrategies.SnakeCaseStrategy()
-    Jackson.mapper.disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT)
-
     val clienteService = ClienteService(connectToDatabase())
 
     val app: HttpHandler = routes(
@@ -107,8 +108,8 @@ fun main() {
         }
     }.then(app)
 
-    val port = System.getenv("SERVER_PORT")?.toInt() ?: 8080
-    val server = PrintRequest()
+    val port = System.getenv("SERVER_PORT")?.toInt() ?: 9999
+    val server = PrintRequestAndResponse()
         .then(appFilter)
         .asServer(SunHttpLoom(port))
         .start()
