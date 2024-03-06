@@ -12,10 +12,13 @@ build: build-app unzip build-docker-compose
 build-app-native:
 	./gradlew clean shadowJar
 
-build-docker-native:
+docker-build:
 	docker build --platform=linux/amd64 -t rinha-http4k-native -f Dockerfile-native .
 
-run-native:
-	docker run --platform=linux/amd64 -p 8080:8080 rinha-http4k-native
+docker-tag:
+	docker tag rinha-http4k-native:latest juniorleaoo/rinha-http4k-native:1
 
-build-native: build-app-native build-docker-native
+docker-push:
+	docker push juniorleaoo/rinha-http4k-native:1
+
+docker-publish: build-app-native docker-build docker-tag docker-push
