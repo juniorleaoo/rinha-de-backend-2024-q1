@@ -19,7 +19,7 @@ import org.http4k.lens.Path
 import org.http4k.lens.nonEmptyString
 import org.http4k.routing.bind
 import org.http4k.routing.routes
-import org.http4k.server.SunHttp
+import org.http4k.server.SunHttpLoom
 import org.http4k.server.asServer
 import java.time.LocalDateTime
 
@@ -110,7 +110,7 @@ fun main() {
     val port = System.getenv("SERVER_PORT")?.toInt() ?: 8080
     val server = PrintRequest()
         .then(appFilter)
-        .asServer(SunHttp(port))
+        .asServer(SunHttpLoom(port))
         .start()
 
     println("Server started on " + server.port())
