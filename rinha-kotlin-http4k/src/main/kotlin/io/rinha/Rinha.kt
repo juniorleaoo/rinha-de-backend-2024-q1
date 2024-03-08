@@ -9,7 +9,6 @@ import org.http4k.core.Status.Companion.NOT_FOUND
 import org.http4k.core.Status.Companion.OK
 import org.http4k.core.Status.Companion.UNPROCESSABLE_ENTITY
 import org.http4k.core.then
-import org.http4k.filter.DebuggingFilters.PrintRequestAndResponse
 import org.http4k.lens.Path
 import org.http4k.lens.nonEmptyString
 import org.http4k.routing.bind
@@ -44,23 +43,23 @@ fun postTransacoes(clienteService: ClienteService): HttpHandler = {
         throw HttpException(UNPROCESSABLE_ENTITY)
     }
 
-    val clienteAtualizado = clienteService.criarTransacao(
-        clienteId = clienteId,
-        transacao = Transacao(
-            valor = transacaoRequest.valor,
-            tipo = transacaoRequest.tipo,
-            descricao = transacaoRequest.descricao,
-            realizadaEm = LocalDateTime.now()
+    val clienteAtualizado =
+        clienteService.criarTransacao(
+            clienteId = clienteId,
+            transacao = Transacao(
+                valor = transacaoRequest.valor,
+                tipo = transacaoRequest.tipo,
+                descricao = transacaoRequest.descricao,
+                realizadaEm = LocalDateTime.now()
+            )
         )
-    )
 
     Response(OK).body(
-        JSONObject(
-            TransacaoResponse(
-                limite = clienteAtualizado.limite,
-                saldo = clienteAtualizado.saldo
-            )
-        ).toString()
+        """{
+            "limite":${clienteAtualizado.limite},
+            "saldo":${clienteAtualizado.saldo}
+            }
+        """.trimIndent()
     )
 }
 
@@ -87,6 +86,8 @@ fun getExtrato(clienteService: ClienteService): HttpHandler = {
 }
 
 fun main() {
+    val port = System.getenv("SERVER_PORT")?.toInt() ?: 9999
+
     val clienteService = ClienteService(connectToDatabase())
 
     val app: HttpHandler = routes(
@@ -107,12 +108,8 @@ fun main() {
             }
         }
     }.then(app)
-
-    val port = System.getenv("SERVER_PORT")?.toInt() ?: 9999
-    val server = PrintRequestAndResponse()
-        .then(appFilter)
         .asServer(SunHttpLoom(port))
         .start()
 
-    println("Server started on " + server.port())
+    println("Server started on " + appFilter.port())
 }

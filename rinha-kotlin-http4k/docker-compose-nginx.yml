@@ -4,7 +4,7 @@ services:
   api1: &api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-native
     hostname: api1
     depends_on:
       db:
@@ -13,15 +13,15 @@ services:
       - DATASOURCE_URL=jdbc:postgresql://db:5432/app
       - DATASOURCE_USERNAME=admin
       - DATASOURCE_PASSWORD=123456
-      - MAX_CONNECTION_POOL_SIZE=20
+      - MAX_CONNECTION_POOL_SIZE=50
       - SERVER_PORT=3000
     networks:
       - rinha
     deploy:
       resources:
         limits:
-          cpus: '0.45'
-          memory: '0.1GB'
+          cpus: '0.3'
+          memory: '50MB'
 
   api2:
     <<: *api
@@ -41,12 +41,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.1'
-          memory: '0.1GB'
+          cpus: '0.2'
+          memory: '80MB'
 
   db:
     image: postgres:16.2-alpine
-    command: 'postgres -c synchronous_commit=off -c max_connections=60 -c fsync=off -c full_page_writes=off'
+    command: 'postgres -c synchronous_commit=off -c max_connections=110 -c fsync=off -c full_page_writes=off'
     hostname: db
     environment:
       - POSTGRES_DB=app
@@ -67,8 +67,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: '0.25GB'
+          cpus: '0.7'
+          memory: '370MB'
 
 networks:
   rinha:
