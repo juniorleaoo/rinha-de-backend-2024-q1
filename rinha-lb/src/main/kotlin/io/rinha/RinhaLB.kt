@@ -61,8 +61,8 @@ fun main() {
 
     val loadBalancer = RoundRobin(
         addrs = listOf(
-            Addr(3000, "api1"),
-            Addr(3001, "api2")
+            Addr(3000, "localhost"),
+            Addr(3001, "localhost")
         )
     )
 
