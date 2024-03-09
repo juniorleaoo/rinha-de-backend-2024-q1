@@ -16,9 +16,9 @@ docker-build:
 	docker build --platform=linux/amd64 -t rinha-http4k-native -f Dockerfile-native .
 
 docker-tag:
-	docker tag rinha-http4k-native:latest juniorleaoo/rinha-http4k-native:1
+	docker tag rinha-http4k-native:latest juniorleaoo/rinha-http4k-native:latest
 
 docker-push:
-	docker push juniorleaoo/rinha-http4k-native:1
+	docker push juniorleaoo/rinha-http4k-native:latest
 
 docker-publish: build-app-native docker-build docker-tag docker-push
