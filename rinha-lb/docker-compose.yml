@@ -2,7 +2,9 @@ version: '3.5'
 
 services:
   api1: &api
-    image: juniorleaoo/rinha-http4k-native:latest
+    build:
+      context: ../rinha-kotlin-http4k
+      dockerfile: Dockerfile-native
     hostname: api1
     platform: linux/amd64
     depends_on:
@@ -32,7 +34,9 @@ services:
       - SERVER_PORT=3001
 
   lbk:
-    image: juniorleaoo/rinha-lbk:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       - api1
       - api2
@@ -52,7 +56,7 @@ services:
       - POSTGRES_PASSWORD=123456
     network_mode: host
     volumes:
-      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ../sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: [ "CMD-SHELL", "sh -c 'pg_isready -U admin -d app'" ]
       interval: 5s

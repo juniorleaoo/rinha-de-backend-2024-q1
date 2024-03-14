@@ -1,15 +1,14 @@
-build-app:
+app-build:
 	./gradlew clean shadowJar
 
-docker-build:
+publish:
+	make app-build
 	docker build --platform=linux/amd64 -t rinha-lbk -f Dockerfile .
-
-docker-tag:
 	docker tag rinha-lbk:latest juniorleaoo/rinha-lbk:latest
-
-docker-push:
 	docker push juniorleaoo/rinha-lbk:latest
 
-build: build-app docker-build
+dbuild:
+	docker compose build --no-cache
 
-push: build docker-tag docker-push
+run:
+	docker compose up -d

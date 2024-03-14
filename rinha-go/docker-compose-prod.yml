@@ -50,7 +50,7 @@ services:
       - POSTGRES_PASSWORD=123456
     network_mode: host
     volumes:
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ../sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     healthcheck:
       test: [ "CMD-SHELL", "sh -c 'pg_isready -U admin -d app'" ]
       interval: 5s
